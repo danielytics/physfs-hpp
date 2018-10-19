@@ -22,8 +22,8 @@
 
        Arthur Brainville (Ybalrid) <ybalrid@ybalrid.info>
        
-The present work is an altered version of phyfs-cpp, hosted here, distributed under
-the same exact terms, and hoster here: https://github.com/kahowell/physfs-cpp
+The present work is an altered version of phyfs-cpp,  distributed under
+the same exact terms, and hosted here: https://github.com/kahowell/physfs-cpp
 
 This library wraps the C library PhysicsFS, written by Ryan C. Gordon and
 others. See http://icculus.org/physfs/. Its LICENSE (from the time of writing)
