@@ -1,5 +1,6 @@
 
    Copyright (c) 2013 Kevin Howell and others.
+   Copyright (c) 2018 Arthur Brainville (Ybalrid)
 
    This software is provided 'as-is', without any express or implied warranty.
    In no event will the authors be held liable for any damages arising from
@@ -19,7 +20,10 @@
 
    3. This notice may not be removed or altered from any source distribution.
 
-       Kevin Howell <kevin.adam.howell@gmail.com>
+       Arthur Brainville (Ybalrid) <ybalrid@ybalrid.info>
+       
+The present work is an altered version of phyfs-cpp, hosted here, distributed under
+the same exact terms, and hoster here: https://github.com/kahowell/physfs-cpp
 
 This library wraps the C library PhysicsFS, written by Ryan C. Gordon and
 others. See http://icculus.org/physfs/. Its LICENSE (from the time of writing)
