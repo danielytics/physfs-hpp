@@ -1,4 +1,4 @@
-PhysFS++
+PhysFS++ (the header only version)
 ========
 
 PhysFS++ is a C++ header-only wrapper for the excellent [PhysicsFS library][1] by Ryan C.
