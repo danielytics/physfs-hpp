@@ -1,192 +1,186 @@
-#ifndef _INCLUDE_PHYSFS_HPP_
-#define _INCLUDE_PHYSFS_HPP_
+#pragma once
 
-#include <physfs.h>
+#include <physfs/physfs.h>
 #include <string>
 #include <vector>
 #include <iostream>
 
-namespace PhysFS {
+namespace physfs {
+    typedef enum {
+        READ,
+        WRITE,
+        APPEND
+    } mode;
 
-typedef enum {
-	READ,
-	WRITE,
-	APPEND
-} mode;
+    using std::string;
 
-using std::string;
+    typedef std::vector<string> StringList;
 
-typedef std::vector<string> StringList;
+    typedef PHYSFS_uint8 uint8;
 
-typedef PHYSFS_uint8 uint8;
+    typedef PHYSFS_sint8 sint8;
 
-typedef PHYSFS_sint8 sint8;
+    typedef PHYSFS_uint16 uint16;
 
-typedef PHYSFS_uint16 uint16;
+    typedef PHYSFS_sint16 sint16;
 
-typedef PHYSFS_sint16 sint16;
+    typedef PHYSFS_uint32 uint32;
 
-typedef PHYSFS_uint32 uint32;
+    typedef PHYSFS_sint32 sint32;
 
-typedef PHYSFS_sint32 sint32;
+    typedef PHYSFS_uint64 uint64;
 
-typedef PHYSFS_uint64 uint64;
+    typedef PHYSFS_sint64 sint64;
 
-typedef PHYSFS_sint64 sint64;
+    typedef PHYSFS_StringCallback StringCallback;
 
-typedef PHYSFS_StringCallback StringCallback;
+    typedef PHYSFS_EnumFilesCallback EnumFilesCallback;
 
-typedef PHYSFS_EnumFilesCallback EnumFilesCallback;
+    typedef PHYSFS_Version Version;
 
-typedef PHYSFS_Version Version;
+    typedef PHYSFS_Allocator Allocator;
 
-typedef PHYSFS_Allocator Allocator;
+    typedef PHYSFS_ArchiveInfo ArchiveInfo;
 
-typedef PHYSFS_ArchiveInfo ArchiveInfo;
+    typedef std::vector<ArchiveInfo> ArchiveInfoList;
 
-typedef std::vector<ArchiveInfo> ArchiveInfoList;
+    typedef uint64 size_t;
 
-typedef uint64 size_t;
+    class base_fstream {
+    protected:
+        PHYSFS_File * const file;
+    public:
+        base_fstream(PHYSFS_File * file);
+        virtual ~base_fstream();
+        size_t length();
+    };
 
-class base_fstream {
-protected:
-	PHYSFS_File * const file;
-public:
-	base_fstream(PHYSFS_File * file);
-	virtual ~base_fstream();
-	size_t length();
-};
+    class ifstream : public base_fstream, public std::istream {
+    public:
+        ifstream(string const & filename);
+        virtual ~ifstream();
+    };
 
-class ifstream : public base_fstream, public std::istream {
-public:
-	ifstream(string const & filename);
-	virtual ~ifstream();
-};
+    class ofstream : public base_fstream, public std::ostream {
+    public:
+        ofstream(string const & filename, mode writeMode = WRITE);
+        virtual ~ofstream();
+    };
 
-class ofstream : public base_fstream, public std::ostream {
-public:
-	ofstream(string const & filename, mode writeMode = WRITE);
-	virtual ~ofstream();
-};
+    class fstream : public base_fstream, public std::iostream {
+    public:
+        fstream(string const & filename, mode openMode = READ);
+        virtual ~fstream();
+    };
 
-class fstream : public base_fstream, public std::iostream {
-public:
-	fstream(string const & filename, mode openMode = READ);
-	virtual ~fstream();
-};
+    Version getLinkedVersion();
 
-Version getLinkedVersion();
+    void init(char const * argv0);
 
-void init(char const * argv0);
+    void deinit();
 
-void deinit();
+    ArchiveInfoList supportedArchiveTypes();
 
-ArchiveInfoList supportedArchiveTypes();
+    string getDirSeparator();
 
-string getDirSeparator();
+    void permitSymbolicLinks(bool allow);
 
-void permitSymbolicLinks(bool allow);
+    StringList getCdRomDirs();
 
-StringList getCdRomDirs();
+    void getCdRomDirs(StringCallback callback, void * extra);
 
-void getCdRomDirs(StringCallback callback, void * extra);
+    string getBaseDir();
 
-string getBaseDir();
+    string getUserDir();
 
-string getUserDir();
+    string getWriteDir();
 
-string getWriteDir();
+    void setWriteDir(string const & newDir);
 
-void setWriteDir(string const & newDir);
+    void removeFromSearchPath(string const & oldDir);
 
-void removeFromSearchPath(string const & oldDir);
+    StringList getSearchPath();
 
-StringList getSearchPath();
+    void getSearchPath(StringCallback callback, void * extra);
 
-void getSearchPath(StringCallback callback, void * extra);
+    void setSaneConfig(string const & orgName, string const & appName, string const & archiveExt, bool includeCdRoms, bool archivesFirst);
 
-void setSaneConfig(string const & orgName, string const & appName, string const & archiveExt, bool includeCdRoms, bool archivesFirst);
+    void mkdir(string const & dirName);
 
-void mkdir(string const & dirName);
+    void deleteFile(string const & filename);
 
-void deleteFile(string const & filename);
+    string getRealDir(string const & filename);
 
-string getRealDir(string const & filename);
+    StringList enumerateFiles(string const & directory);
 
-StringList enumerateFiles(string const & directory);
+    void enumerateFiles(string const & directory, EnumFilesCallback callback, void * extra);
 
-void enumerateFiles(string const & directory, EnumFilesCallback callback, void * extra);
+    bool exists(string const & filename);
 
-bool exists(string const & filename);
+    bool isDirectory(string const & filename);
 
-bool isDirectory(string const & filename);
+    bool isSymbolicLink(string const & filename);
 
-bool isSymbolicLink(string const & filename);
+    sint64 getLastModTime(string const & filename);
 
-sint64 getLastModTime(string const & filename);
+    bool isInit();
 
-bool isInit();
+    bool symbolicLinksPermitted();
 
-bool symbolicLinksPermitted();
+    void setAllocator(Allocator const * allocator);
 
-void setAllocator(Allocator const * allocator);
+    void mount(string const & newDir, string const & mountPoint, bool appendToPath);
 
-void mount(string const & newDir, string const & mountPoint, bool appendToPath);
+    string getMountPoint(string const & dir);
 
-string getMountPoint(string const & dir);
+    namespace utility {
 
-namespace Util {
+        sint16 swapSLE16(sint16 value);
 
-sint16 swapSLE16(sint16 value);
+        uint16 swapULE16(uint16 value);
 
-uint16 swapULE16(uint16 value);
+        sint32 swapSLE32(sint32 value);
 
-sint32 swapSLE32(sint32 value);
+        uint32 swapULE32(uint32 value);
 
-uint32 swapULE32(uint32 value);
+        sint64 swapSLE64(sint64 value);
 
-sint64 swapSLE64(sint64 value);
+        uint64 swapULE64(uint64 value);
 
-uint64 swapULE64(uint64 value);
+        sint16 swapSBE16(sint16 value);
 
-sint16 swapSBE16(sint16 value);
+        uint16 swapUBE16(uint16 value);
 
-uint16 swapUBE16(uint16 value);
+        sint32 swapSBE32(sint32 value);
 
-sint32 swapSBE32(sint32 value);
+        uint32 swapUBE32(uint32 value);
 
-uint32 swapUBE32(uint32 value);
+        sint64 swapSBE64(sint64 value);
 
-sint64 swapSBE64(sint64 value);
+        uint64 swapUBE64(uint64 value);
 
-uint64 swapUBE64(uint64 value);
+        string utf8FromUcs4(uint32 const * src);
 
-string utf8FromUcs4(uint32 const * src);
+        string utf8ToUcs4(char const * src);
 
-string utf8ToUcs4(char const * src);
+        string utf8FromUcs2(uint16 const * src);
 
-string utf8FromUcs2(uint16 const * src);
+        string utf8ToUcs2(char const * src);
 
-string utf8ToUcs2(char const * src);
+        string utf8FromLatin1(char const * src);
 
-string utf8FromLatin1(char const * src);
+    }
 
-}
 
-}
 
 #ifdef PHYFSPP_IMPL
 
 #include <streambuf>
-#include <string>
-#include <string.h>
 #include <stdexcept>
-#include "physfs.hpp"
+#include <string.h>
 
 using std::streambuf;
 using std::ios_base;
-
-namespace PhysFS {
 
 class fbuf : public streambuf {
 private:
@@ -286,7 +280,7 @@ base_fstream::~base_fstream() {
 	PHYSFS_close(file);
 }
 
-PhysFS::size_t base_fstream::length() {
+physfs::size_t base_fstream::length() {
 	return PHYSFS_fileLength(file);
 }
 
@@ -474,55 +468,55 @@ string getMountPoint(const string& dir) {
 	return PHYSFS_getMountPoint(dir.c_str());
 }
 
-sint16 Util::swapSLE16(sint16 value) {
+sint16 utility::swapSLE16(sint16 value) {
 	return PHYSFS_swapSLE16(value);
 }
 
-uint16 Util::swapULE16(uint16 value) {
+uint16 utility::swapULE16(uint16 value) {
 	return PHYSFS_swapULE16(value);
 }
 
-sint32 Util::swapSLE32(sint32 value) {
+sint32 utility::swapSLE32(sint32 value) {
 	return PHYSFS_swapSLE32(value);
 }
 
-uint32 Util::swapULE32(uint32 value) {
+uint32 utility::swapULE32(uint32 value) {
 	return PHYSFS_swapULE32(value);
 }
 
-sint64 Util::swapSLE64(sint64 value) {
+sint64 utility::swapSLE64(sint64 value) {
 	return PHYSFS_swapSLE64(value);
 }
 
-uint64 Util::swapULE64(uint64 value) {
+uint64 utility::swapULE64(uint64 value) {
 	return PHYSFS_swapULE64(value);
 }
 
-sint16 Util::swapSBE16(sint16 value) {
+sint16 utility::swapSBE16(sint16 value) {
 	return PHYSFS_swapSBE16(value);
 }
 
-uint16 Util::swapUBE16(uint16 value) {
+uint16 utility::swapUBE16(uint16 value) {
 	return PHYSFS_swapUBE16(value);
 }
 
-sint32 Util::swapSBE32(sint32 value) {
+sint32 utility::swapSBE32(sint32 value) {
 	return PHYSFS_swapSBE32(value);
 }
 
-uint32 Util::swapUBE32(uint32 value) {
+uint32 utility::swapUBE32(uint32 value) {
 	return PHYSFS_swapUBE32(value);
 }
 
-sint64 Util::swapSBE64(sint64 value) {
+sint64 utility::swapSBE64(sint64 value) {
 	return PHYSFS_swapSBE64(value);
 }
 
-uint64 Util::swapUBE64(uint64 value) {
+uint64 utility::swapUBE64(uint64 value) {
 	return PHYSFS_swapUBE64(value);
 }
 
-string Util::utf8FromUcs4(const uint32* src) {
+string utility::utf8FromUcs4(const uint32* src) {
 	string value;
 	std::size_t length = strlen((char*) src);
 	char * buffer = new char[length]; // will be smaller than len
@@ -531,7 +525,7 @@ string Util::utf8FromUcs4(const uint32* src) {
 	return value;
 }
 
-string Util::utf8ToUcs4(const char* src) {
+string utility::utf8ToUcs4(const char* src) {
 	string value;
 	std::size_t length = strlen(src) * 4;
 	char * buffer = new char[length]; // will be smaller than len
@@ -540,7 +534,7 @@ string Util::utf8ToUcs4(const char* src) {
 	return value;
 }
 
-string Util::utf8FromUcs2(const uint16* src) {
+string utility::utf8FromUcs2(const uint16* src) {
 	string value;
 	std::size_t length = strlen((char*) src);
 	char * buffer = new char[length]; // will be smaller than len
@@ -549,7 +543,7 @@ string Util::utf8FromUcs2(const uint16* src) {
 	return value;
 }
 
-string Util::utf8ToUcs2(const char* src) {
+string utility::utf8ToUcs2(const char* src) {
 	string value;
 	std::size_t length = strlen(src) * 2;
 	char * buffer = new char[length]; // will be smaller than len
@@ -558,7 +552,7 @@ string Util::utf8ToUcs2(const char* src) {
 	return value;
 }
 
-string Util::utf8FromLatin1(const char* src) {
+string utility::utf8FromLatin1(const char* src) {
 	string value;
 	std::size_t length = strlen((char*) src) * 2;
 	char * buffer = new char[length]; // will be smaller than len
@@ -567,9 +561,6 @@ string Util::utf8FromLatin1(const char* src) {
 	return value;
 }
 
-}
-
-
 #endif
 
-#endif /* _INCLUDE_PHYSFS_HPP_ */
+} // end namespace physfs
