@@ -42,6 +42,8 @@ namespace physfs {
 
     typedef PHYSFS_ArchiveInfo ArchiveInfo;
 
+    typedef PHYSFS_ErrorCode ErrorCode;
+
     typedef std::vector<ArchiveInfo> ArchiveInfoList;
 
     typedef uint64 size_t;
@@ -75,9 +77,9 @@ namespace physfs {
 
     Version getLinkedVersion();
 
-    void init(char const * argv0);
+    int init(char const * argv0);
 
-    void deinit();
+    int deinit();
 
     ArchiveInfoList supportedArchiveTypes();
 
@@ -329,12 +331,12 @@ Version getLinkedVersion() {
 	return version;
 }
 
-void init(const char* argv0) {
-	PHYSFS_init(argv0);
+int init(const char* argv0) {
+	return PHYSFS_init(argv0);
 }
 
-void deinit() {
-	PHYSFS_deinit();
+int deinit() {
+    return PHYSFS_deinit();
 }
 
 ArchiveInfoList supportedArchiveTypes() {
@@ -343,6 +345,14 @@ ArchiveInfoList supportedArchiveTypes() {
 		list.push_back(**archiveType);
 	}
 	return list;
+}
+
+ErrorCode getLastErrorCode() {
+    return PHYSFS_getLastErrorCode();
+}
+
+string getErrorByCode(ErrorCode code) {
+    return PHYSFS_getErrorByCode(code);
 }
 
 string getDirSeparator() {
