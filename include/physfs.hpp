@@ -1,6 +1,6 @@
 #pragma once
 
-#include <physfs/physfs.h>
+#include <physfs.h>
 #include <string>
 #include <vector>
 #include <iostream>
