@@ -34,7 +34,7 @@ namespace physfs {
 
     typedef PHYSFS_StringCallback StringCallback;
 
-    typedef PHYSFS_EnumFilesCallback EnumFilesCallback;
+    typedef PHYSFS_EnumerateCallback EnumFilesCallback;
 
     typedef PHYSFS_Version Version;
 
@@ -93,7 +93,7 @@ namespace physfs {
 
     string getBaseDir();
 
-    string getUserDir();
+    string getPrefDir(string const & orgName, string const & appName);
 
     string getWriteDir();
 
@@ -115,7 +115,7 @@ namespace physfs {
 
     StringList enumerateFiles(string const & directory);
 
-    void enumerateFiles(string const & directory, EnumFilesCallback callback, void * extra);
+    int enumerateFiles(string const & directory, EnumFilesCallback callback, void * extra);
 
     bool exists(string const & filename);
 
@@ -193,7 +193,7 @@ private:
 		if (PHYSFS_eof(file)) {
 			return traits_type::eof();
 		}
-		size_t bytesRead = PHYSFS_read(file, buffer, 1, bufferSize);
+		size_t bytesRead = PHYSFS_readBytes(file, buffer, bufferSize);
 		if (bytesRead < 1) {
 			return traits_type::eof();
 		}
@@ -210,9 +210,12 @@ private:
 			// subtract characters currently in buffer from seek position
 			PHYSFS_seek(file, (PHYSFS_tell(file) + pos) - (egptr() - gptr()));
 			break;
+        case std::_S_ios_seekdir_end:
 		case std::ios_base::end:
 			PHYSFS_seek(file, PHYSFS_fileLength(file) + pos);
 			break;
+        default:
+            break;
 		}
 		if (mode & std::ios_base::in) {
 			setg(egptr(), egptr(), egptr());
@@ -238,11 +241,11 @@ private:
 		if (pptr() == pbase() && c == traits_type::eof()) {
 			return 0; // no-op
 		}
-		if (PHYSFS_write(file, pbase(), pptr() - pbase(), 1) < 1) {
+		if (PHYSFS_writeBytes(file, pbase(), pptr() - pbase()) < 1) {
 			return traits_type::eof();
 		}
 		if (c != traits_type::eof()) {
-			if (PHYSFS_write(file, &c, 1, 1) < 1) {
+			if (PHYSFS_writeBytes(file, &c, 1) < 1) {
 				return traits_type::eof();
 			}
 		}
@@ -259,7 +262,7 @@ private:
 protected:
 	PHYSFS_File * const file;
 public:
-	fbuf(PHYSFS_File * file, std::size_t bufferSize = 2048) : file(file), bufferSize(bufferSize) {
+	fbuf(PHYSFS_File * file, std::size_t bufferSize = 2048) : bufferSize(bufferSize), file(file) {
 		buffer = new char[bufferSize];
 		char * end = buffer + bufferSize;
 		setg(end, end, end);
@@ -381,8 +384,8 @@ string getBaseDir() {
 	return PHYSFS_getBaseDir();
 }
 
-string getUserDir() {
-	return PHYSFS_getUserDir();
+string getPrefDir(string const & orgName, string const & appName) {
+	return PHYSFS_getPrefDir(orgName.c_str(), appName.c_str());
 }
 
 string getWriteDir() {
@@ -394,7 +397,7 @@ void setWriteDir(const string& newDir) {
 }
 
 void removeFromSearchPath(const string& oldDir) {
-	PHYSFS_removeFromSearchPath(oldDir.c_str());
+	PHYSFS_unmount(oldDir.c_str());
 }
 
 StringList getSearchPath() {
@@ -438,8 +441,8 @@ StringList enumerateFiles(const string& directory) {
 	return files;
 }
 
-void enumerateFiles(const string& directory, EnumFilesCallback callback, void * extra) {
-	PHYSFS_enumerateFilesCallback(directory.c_str(), callback, extra);
+int enumerateFiles(const string& directory, EnumFilesCallback callback, void * extra) {
+	return PHYSFS_enumerate(directory.c_str(), callback, extra);
 }
 
 bool exists(const string& filename) {
@@ -447,15 +450,27 @@ bool exists(const string& filename) {
 }
 
 bool isDirectory(const string& filename) {
-	return PHYSFS_isDirectory(filename.c_str());
+    PHYSFS_Stat statbuf;
+    if (PHYSFS_stat(filename.c_str(), &statbuf) == 0) {
+        throw std::runtime_error("PHYSFS_stat encountered an unknown error");
+    }
+    return (statbuf.filetype == PHYSFS_FILETYPE_DIRECTORY);
 }
 
 bool isSymbolicLink(const string& filename) {
-	return PHYSFS_isSymbolicLink(filename.c_str());
+    PHYSFS_Stat statbuf;
+    if (PHYSFS_stat(filename.c_str(), &statbuf) == 0) {
+        throw std::runtime_error("PHYSFS_stat encountered an unknown error");
+    }
+    return (statbuf.filetype == PHYSFS_FILETYPE_SYMLINK);
 }
 
 sint64 getLastModTime(const string& filename) {
-	return PHYSFS_getLastModTime(filename.c_str());
+    PHYSFS_Stat statbuf;
+    if (PHYSFS_stat(filename.c_str(), &statbuf) == 0) {
+        throw std::runtime_error("PHYSFS_stat encountered an unknown error");
+    }
+    return statbuf.modtime;
 }
 
 bool isInit() {
